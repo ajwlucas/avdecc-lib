@@ -42,6 +42,11 @@
 
 namespace avdecc_lib
 {
+    end_station_imp::end_station_imp()
+    {
+
+    }
+
     end_station_imp::end_station_imp(const uint8_t *frame, size_t frame_len)
     {
         end_station_connection_status = ' ';
