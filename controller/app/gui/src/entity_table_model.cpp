@@ -31,7 +31,7 @@ int EntityTableModel::rowCount(const QModelIndex & index) const
 
 int EntityTableModel::columnCount(const QModelIndex & /*parent*/) const
 {
-    return 9;
+    return 7;
 }
 
 void EntityTableModel::emitLayoutChanged()
@@ -46,7 +46,7 @@ QVariant EntityTableModel::headerData(int section, Qt::Orientation orientation,
 {
     if (role == Qt::FontRole)
     {
-        if (section == 0 || section == 6 || section == 7)
+        if (section == 0 || section == 4 || section == 5)
         {
             QFont iconFont = QFont("Entypo", 32, QFont::Normal, false);
             return iconFont;
@@ -54,8 +54,8 @@ QVariant EntityTableModel::headerData(int section, Qt::Orientation orientation,
     }
 
     if (role == Qt::SizeHintRole) {
-        int widths[9] = {40, 100, 100, 100, 100, 100, 40, 40, 40};
-        if (section >= 0 && section < 9) {
+        int widths[9] = {40, 150, 150, 150, 40, 40, 1};
+        if (section >= 0 && section < 7) {
             return QSize(widths[section], 20); 
         }
         else {
@@ -75,10 +75,8 @@ QVariant EntityTableModel::headerData(int section, Qt::Orientation orientation,
         case 1: return QString("Device Name");
         case 2: return QString("Manufacturer");
         case 3: return QString("Model");
-        case 4: return QString("Firmware Version");
-        case 5: return QString("Entity ID");
-        case 6: return QString(QChar(0xE70A));
-        case 7: return QString(QChar(0x2665));
+        case 4: return QString(QChar(0xE70A));
+        case 5: return QString(QChar(0x2665));
         }
         return QVariant();
     }
@@ -139,8 +137,8 @@ QVariant EntityTableModel::data(const QModelIndex &index, int role) const
             case 1: return s.sprintf("%s", (entity ? end_station_name : "UNKNOWN"));
             case 2: return s.sprintf("%s", vendor);
             case 3: return s.sprintf("%s", model);
-            case 4: return s.sprintf("%s", (entity ? fw_ver : "UNKNOWN"));
-            case 5: return s.sprintf("%016llX", end_station_entity_id);
+            // case 4: return s.sprintf("%s", (entity ? fw_ver : "UNKNOWN"));
+            // case 3: return s.sprintf("%016llX", end_station_entity_id);
             }
         }
     }
