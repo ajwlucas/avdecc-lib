@@ -7,7 +7,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY lib)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY bin)
 
-include_directories( src ../../lib/include ../../lib/src ../../jdksavdecc-c/include )
+include_directories( src ../../lib/include ../../lib/src ../../../jdksavdecc-c/include )
 
 file(GLOB_RECURSE GUI_INCLUDES "src/*.h" )
 
@@ -36,7 +36,7 @@ elseif(UNIX)
   target_link_libraries(avdeccgui rt)
 elseif(WIN32)
   set(PCAP_NAME wpcap)
-  include_directories( src src/msvc ../../lib/include ../../jdksavdecc-c/include )
+  include_directories( src src/msvc ../../lib/include ../../../jdksavdecc-c/include )
   file(GLOB_RECURSE SYSTEM_SPEC_SRC "src/msvc/*.c")
 
   if( CMAKE_SIZEOF_VOID_P EQUAL 8 )
