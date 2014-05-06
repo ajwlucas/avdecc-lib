@@ -18,14 +18,15 @@ EntityTableModel::EntityTableModel(const EntityTableModel &copy_from_me)
 {
 }
 
-EntityTableModel::EntityTableModel(avdecc_lib::controller *controller_ref)
+EntityTableModel::EntityTableModel(avdecc_lib::controller *controller_ref, EntityModel *entity_model)
 {
     this->controller_ref = controller_ref;
+    this->entity_model = entity_model;
 }
 
-int EntityTableModel::rowCount(const QModelIndex & /*parent*/) const
+int EntityTableModel::rowCount(const QModelIndex & index) const
 {
-   return this->controller_ref->get_end_station_count();
+   return entity_model->rowCount(index);
 }
 
 int EntityTableModel::columnCount(const QModelIndex & /*parent*/) const
@@ -70,9 +71,6 @@ QVariant EntityTableModel::headerData(int section, Qt::Orientation orientation,
         uint c[2] = {QChar::surrogateToUcs4(0xD83D,0xDD12), 0};
         switch (section)
         {
-        // case 0: return QString(u8"\u1F512");
-        // case 0: return QString::fromUtf16(reinterpret_cast<const ushort *>(u"\u1F512"));
-        // case 0: return QString(QChar(0x0001), QChar(0xF512));
         case 0: return QString::fromUcs4(c);
         case 1: return QString("Device Name");
         case 2: return QString("Manufacturer");
@@ -115,7 +113,8 @@ QVariant EntityTableModel::data(const QModelIndex &index, int role) const
 
     if (role == Qt::DisplayRole)
     {
-        avdecc_lib::end_station *end_station = controller_ref->get_end_station_by_index(row);
+        QVariant es = entity_model->data(index, EntityModel::EndStationPtrRole);
+        auto end_station = dynamic_cast<avdecc_lib::end_station *>(es.value<avdecc_lib::end_station_imp *>());
 
         if (end_station)
         {

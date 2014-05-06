@@ -3,6 +3,7 @@
 #include <QApplication>
 #include <QStyleFactory>
 #include "entity_table_model.h"
+#include "entity_model.h"
 
 QPalette setup_palette()
 {
@@ -32,6 +33,7 @@ int main(int argc, char *argv[])
     qRegisterMetaType<QList<QPersistentModelIndex>>();
     qRegisterMetaType<QAbstractItemModel::LayoutChangeHint>();
     qRegisterMetaType<int32_t>("int32_t");
+    // qRegisterMetaType<avdecc_lib::end_station_imp*>();
     MainWindow w;
 
     a.setStyle(QStyleFactory::create("Fusion"));

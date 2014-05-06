@@ -7,6 +7,7 @@
 #include <QTime>
 #include <QTabWidget>
 #include <QSplitter>
+#include <QTimer>
 #include "identify_button_delegate.h"
 #include "router_cell_delegate.h"
 #include "router_header.h"
@@ -23,7 +24,7 @@ MainWindow::MainWindow(QWidget *parent) :
         if (appFontId < 0){
             qWarning() << "Attempt to load application font: "<< fontName << " failed.";
         }
-        this->show();
+        QTimer::singleShot(500, this, SLOT(showMaximized()));
     }
 }
 
@@ -31,7 +32,9 @@ MainWindow::~MainWindow()
 {
     delete ui;
     delete entity_table_model;
-    delete entity_router_model;
+    delete eth_interface_dialog;
+    delete entity_model;
+    delete listener_proxy;
     sys->process_close();
     sys->destroy();
     controller_obj->destroy();
@@ -89,12 +92,14 @@ void MainWindow::wrapper_to_notification_callback(void *user_obj, int32_t notifi
 {
     MainWindow* mySelf = (MainWindow*) user_obj;
 
-    if (notification_type == avdecc_lib::END_STATION_READ_COMPLETED)
+    if (notification_type == avdecc_lib::END_STATION_READ_COMPLETED ||
+        notification_type == avdecc_lib::END_STATION_CONNECTED ||
+        notification_type == avdecc_lib::END_STATION_DISCONNECTED)
     {
         qDebug("new entity");
         MainWindow* mySelf = (MainWindow*) user_obj;
         mySelf->entity_table_model->emitLayoutChanged();
-        // emit mySelf->entity_table_model->layoutChanged();
+        mySelf->entity_model->emitLayoutChanged();
     }
     // printf("%d, %d, %d\n", notification_type, cmd_type, desc_type);
     /*
@@ -127,6 +132,7 @@ void MainWindow::update_device_overview(const QItemSelection &selected, const QI
         if (end_station) {
             avdecc_lib::entity_descriptor *entity = end_station->get_entity_desc_by_index(end_station->get_current_entity_index());
             if (entity) {
+                device_overview_widget->setEnabled(true);
                 QString s;
                 uint16_t current_config = end_station->get_current_config_index();
                 avdecc_lib::configuration_descriptor *configuration = entity->get_config_desc_by_index(current_config);
@@ -143,13 +149,12 @@ void MainWindow::update_device_overview(const QItemSelection &selected, const QI
         }
     }
     else {
-        device_overview_widget->hide();
+        device_overview_widget->setEnabled(false);
     }
 }
 
 void MainWindow::send_identify(const QModelIndex &index, bool on)
 {
-    qDebug("HELLO");
     avdecc_lib::end_station *end_station = controller_obj->get_end_station_by_index(index.row());
 
     intptr_t cmd_notification_id = 0;
@@ -158,8 +163,6 @@ void MainWindow::send_identify(const QModelIndex &index, bool on)
 
 void MainWindow::left_tab_change(int index)
 {
-    qDebug("Tab change: %d", index);
-
     QTabWidget *right_tab_widget = this->centralWidget()->findChild<QTabWidget *>("rightTabWidget");
     right_tab_widget->removeTab(0);
     QSplitter *splitter = this->centralWidget()->findChild<QSplitter *>("splitter");
@@ -204,11 +207,36 @@ int MainWindow::show_eth_interface_dialog()
 
     if (eth_interface_dialog->exec() == QDialog::Accepted)
     {
-        qDebug("YES: %d", list->currentRow());
         netif->select_interface_by_num(list->currentRow()+1);
         sys->process_start();
 
-        entity_table_model = new EntityTableModel(controller_obj);
+        QSplitter *splitter = this->centralWidget()->findChild<QSplitter *>("splitter");
+        QList<int> sizes { 500, 500 };
+        splitter->setSizes(sizes);
+
+        entity_model = new EntityModel(controller_obj);
+        entity_table_model = new EntityTableModel(controller_obj, entity_model);
+
+        QListWidget *listener_stream_list = this->centralWidget()->findChild<QListWidget *>("listenerStreamList");
+        listener_proxy = new EntitySortFilterProxyModel(this, listener_stream_list);
+        listener_proxy->setSourceModel(entity_model);
+        listener_proxy->setDynamicSortFilter(true);
+        listener_proxy->setFilterTalkers(true);
+        QListView *listener_device_list = this->centralWidget()->findChild<QListView *>("listenerDeviceList");
+        listener_device_list->setModel(listener_proxy);
+        connect(listener_device_list->selectionModel(), &QItemSelectionModel::selectionChanged,
+                listener_proxy, &EntitySortFilterProxyModel::handleSelectionChanged);
+
+        QListWidget *talker_stream_list = this->centralWidget()->findChild<QListWidget *>("talkerStreamList");
+        talker_proxy = new EntitySortFilterProxyModel(this, talker_stream_list);
+        talker_proxy->setSourceModel(entity_model);
+        talker_proxy->setDynamicSortFilter(true);
+        talker_proxy->setFilterListeners(true);
+        QListView *talker_device_list = this->centralWidget()->findChild<QListView *>("talkerDeviceList");
+        talker_device_list->setModel(talker_proxy);
+        connect(talker_device_list->selectionModel(), &QItemSelectionModel::selectionChanged,
+                talker_proxy, &EntitySortFilterProxyModel::handleSelectionChanged);
+
         QTableView *device_table = this->centralWidget()->findChild<QTableView *>("tableView");
         device_table->setModel(entity_table_model);
         device_table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -217,21 +245,12 @@ int MainWindow::show_eth_interface_dialog()
         IdentifyButtonDelegate* identifyDelegate = new IdentifyButtonDelegate(device_table);
         device_table->setItemDelegateForColumn(6, identifyDelegate);
 
-        entity_router_model = new EntityRouterModel(controller_obj);
-        QTableView *router_grid = this->centralWidget()->findChild<QTableView *>("routeView");
-        router_grid->setModel(entity_router_model);
-
-        RouterCellDelegate* cellDelegate = new RouterCellDelegate(router_grid);
-        router_grid->setItemDelegate(cellDelegate);
-
         QWidget *device_overview_widget = this->centralWidget()->findChild<QWidget *>("deviceOverviewWidget");
-        device_overview_widget->hide();
+        device_overview_widget->setEnabled(false);
 
         QTabWidget *left_tab_widget = this->centralWidget()->findChild<QTabWidget *>("leftTabWidget");
+        left_tab_widget->setCurrentIndex(0);
         QTabWidget *right_tab_widget = this->centralWidget()->findChild<QTabWidget *>("rightTabWidget");
-
-        // right_tab_widget->widget(1)->setStyleSheet("QTabWidget::tab:disabled { width: 0; height: 0; margin: 0; padding: 0; border: none; }");
-        // right_tab_widget->setTabEnabled(1, false);
 
         QWidget *tab_end_station_prop = right_tab_widget->findChild<QWidget *>("endStationProperties");
         QWidget *tab_stream_router = right_tab_widget->findChild<QWidget *>("streamRouteView");
@@ -257,15 +276,6 @@ int MainWindow::show_eth_interface_dialog()
         connect(identifyDelegate, &IdentifyButtonDelegate::buttonClicked, this, &MainWindow::send_identify);
         connect(this, &MainWindow::new_log, this, &MainWindow::insert_log_msg);
 
-        RouterHeader *m_router_header_h = new RouterHeader(Qt::Horizontal);
-        RouterHeader *m_router_header_v = new RouterHeader(Qt::Vertical);
-        router_grid->setHorizontalHeader(m_router_header_h);
-        router_grid->setVerticalHeader(m_router_header_v);
-        router_grid->horizontalHeader()->setDefaultSectionSize(20);
-        router_grid->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        router_grid->verticalHeader()->setDefaultSectionSize(20);
-        router_grid->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-        router_grid->verticalHeader()->setFixedWidth(150);
         return 0;
     }
     else

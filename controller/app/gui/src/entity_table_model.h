@@ -6,6 +6,7 @@
 #include "end_station.h"
 #include "entity_descriptor.h"
 #include "configuration_descriptor.h"
+#include "entity_model.h"
 
 class EntityTableModel : public QAbstractTableModel
 {
@@ -13,7 +14,7 @@ class EntityTableModel : public QAbstractTableModel
 public:
     explicit EntityTableModel(QObject *parent = 0);
     explicit EntityTableModel(const EntityTableModel& copy_from_me);
-    EntityTableModel(avdecc_lib::controller *controller_ref);
+    EntityTableModel(avdecc_lib::controller *controller_ref, EntityModel *entity_model);
     
     int rowCount(const QModelIndex &) const;
     int columnCount(const QModelIndex &) const;
@@ -27,6 +28,7 @@ public slots:
 
 private:
     avdecc_lib::controller *controller_ref;
+    EntityModel *entity_model;
     int get_current_entity_and_descriptor(avdecc_lib::end_station *end_station,
         avdecc_lib::entity_descriptor **entity, avdecc_lib::configuration_descriptor **configuration) const;
     

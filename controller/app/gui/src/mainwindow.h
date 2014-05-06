@@ -7,6 +7,9 @@
 #include "eth_interface_dialog.h"
 #include "entity_table_model.h"
 #include "entity_router_model.h"
+#include "entity_model.h"
+#include "entity_sort_filter_proxy_model.h"
+#include <QSortFilterProxyModel>
 
 #include "net_interface.h"
 #include "system.h"
@@ -27,7 +30,9 @@ public:
     explicit MainWindow(QWidget *parent = 0);
     int show_eth_interface_dialog();
     EntityTableModel *entity_table_model;
-    EntityRouterModel *entity_router_model;
+    EntityModel *entity_model;
+    EntitySortFilterProxyModel *listener_proxy;
+    EntitySortFilterProxyModel *talker_proxy;
 
     ~MainWindow();
     
