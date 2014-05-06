@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License (MIT)
  *
- * Copyright (c) 2013 AudioScience Inc.
+ * Copyright (c) 2014 AudioScience Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,29 +22,35 @@
  */
 
 /**
- * strings_descriptor_imp.h
+ * descriptor_field_flags_imp.h
  *
- * Strings descriptor implementation class
+ * Implementation of a class to describe a single flag bit.
  */
 
-#pragma once
+#include <stdint.h>
+#include "build.h"
 
-#include "descriptor_base_imp.h"
-#include "strings_descriptor.h"
+#include "descriptor_field_flags_imp.h"
 
 namespace avdecc_lib
 {
-    class strings_descriptor_imp : public strings_descriptor, public virtual descriptor_base_imp
+    descriptor_field_flags_imp::descriptor_field_flags_imp(const char * name, uint32_t mask) :
+            m_mask(mask), m_name(name)
     {
-    private:
-        struct jdksavdecc_descriptor_strings strings_desc; // Structure containing the strings_desc fields
+    }
 
-    public:
-        strings_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len);
-        virtual ~strings_descriptor_imp();
+    descriptor_field_flags_imp::~descriptor_field_flags_imp()
+    {
+    }
 
-        uint16_t STDCALL descriptor_type() const;
-        uint16_t STDCALL descriptor_index() const;
-        uint8_t * STDCALL get_string_by_index(size_t string_index);
-    };
+    const char * STDCALL descriptor_field_flags_imp::get_flag_name(void) const
+    {
+        return m_name;
+    }
+
+    uint32_t STDCALL descriptor_field_flags_imp::get_flag_mask(void) const
+    {
+        return m_mask;
+    }
 }
+

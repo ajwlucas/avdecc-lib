@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License (MIT)
  *
- * Copyright (c) 2013 AudioScience Inc.
+ * Copyright (c) 2014 AudioScience Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,29 +22,43 @@
  */
 
 /**
- * strings_descriptor_imp.h
+ * descriptor_field.h
  *
- * Strings descriptor implementation class
+ * Public descriptor base interface class
  */
 
 #pragma once
 
-#include "descriptor_base_imp.h"
-#include "strings_descriptor.h"
+#include <vector>
+#include <stdint.h>
+#include "build.h"
+
+#include "descriptor_field_flags_imp.h"
+#include "descriptor_field.h"
 
 namespace avdecc_lib
 {
-    class strings_descriptor_imp : public strings_descriptor, public virtual descriptor_base_imp
+    class descriptor_field_imp : public descriptor_field
     {
-    private:
-        struct jdksavdecc_descriptor_strings strings_desc; // Structure containing the strings_desc fields
-
     public:
-        strings_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len);
-        virtual ~strings_descriptor_imp();
+        descriptor_field_imp(const char * name, enum aem_desc_field_types the_type, void * v);
+        virtual ~descriptor_field_imp();
 
-        uint16_t STDCALL descriptor_type() const;
-        uint16_t STDCALL descriptor_index() const;
-        uint8_t * STDCALL get_string_by_index(size_t string_index);
+        void append_field(descriptor_field_flags_imp *bit_field);
+
+        const char * STDCALL get_name() const;
+        enum descriptor_field::aem_desc_field_types STDCALL get_type() const;
+        char * STDCALL get_char() const;
+        uint16_t STDCALL get_uint16() const;
+        uint32_t STDCALL get_uint32() const;
+        uint32_t STDCALL get_flags() const;
+        uint32_t STDCALL get_flags_count() const;
+        descriptor_field_flags * STDCALL get_flag_by_index(uint32_t index) const;
+    private:
+        const char * m_name;
+        void * m_value;
+        enum aem_desc_field_types m_type;
+        std::vector<descriptor_field_flags_imp *> m_fields;
     };
 }
+

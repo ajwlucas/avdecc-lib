@@ -224,6 +224,13 @@ namespace avdecc_lib
         {
             end_station_vec.at(disconnected_end_station_index)->set_disconnected();
         }
+
+        /* tick updates to background read of descriptors */
+        for (uint32_t i = 0; i < end_station_vec.size(); i++)
+        {
+            end_station_vec.at(i)->background_read_update_timeouts();
+            end_station_vec.at(i)->background_read_submit_pending();
+        }
     }
 
     int controller_imp::find_in_end_station(struct jdksavdecc_eui64 &other_entity_id, const uint8_t *frame)
@@ -434,6 +441,7 @@ namespace avdecc_lib
         struct jdksavdecc_frame packet_frame;
 
         packet_frame.length = (uint16_t)frame_len;
+        assert(frame_len <= sizeof(packet_frame.payload));
         memcpy(packet_frame.payload, frame, frame_len);
 
         if(subtype == JDKSAVDECC_SUBTYPE_AECP)

@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License (MIT)
  *
- * Copyright (c) 2013 AudioScience Inc.
+ * Copyright (c) 2014 AudioScience Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,29 +22,30 @@
  */
 
 /**
- * strings_descriptor_imp.h
+ * descriptor_field_flags.h
  *
- * Strings descriptor implementation class
+ * Public descriptor base interface class
  */
 
 #pragma once
 
-#include "descriptor_base_imp.h"
-#include "strings_descriptor.h"
+#include <stdint.h>
+#include "build.h"
 
 namespace avdecc_lib
 {
-    class strings_descriptor_imp : public strings_descriptor, public virtual descriptor_base_imp
+    class descriptor_field_flags
     {
-    private:
-        struct jdksavdecc_descriptor_strings strings_desc; // Structure containing the strings_desc fields
-
     public:
-        strings_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len);
-        virtual ~strings_descriptor_imp();
+        /**
+         * \return The name of the flag.
+         */
+        AVDECC_CONTROLLER_LIB32_API virtual const char * STDCALL get_flag_name(void) const = 0;
 
-        uint16_t STDCALL descriptor_type() const;
-        uint16_t STDCALL descriptor_index() const;
-        uint8_t * STDCALL get_string_by_index(size_t string_index);
+        /**
+         * \return The mask for the flag.
+         */
+        AVDECC_CONTROLLER_LIB32_API virtual uint32_t STDCALL get_flag_mask(void) const = 0;
     };
 }
+

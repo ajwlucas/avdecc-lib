@@ -1,7 +1,7 @@
 /*
  * Licensed under the MIT License (MIT)
  *
- * Copyright (c) 2013 AudioScience Inc.
+ * Copyright (c) 2014 AudioScience Inc.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
  * this software and associated documentation files (the "Software"), to deal in
@@ -22,29 +22,40 @@
  */
 
 /**
- * strings_descriptor_imp.h
+ * external_port_input_descriptor_imp.h
  *
- * Strings descriptor implementation class
+ * Public EXTERNAL PORT INPUT descriptor implementation class
  */
 
 #pragma once
 
+#include <stdint.h>
+#include "build.h"
 #include "descriptor_base_imp.h"
-#include "strings_descriptor.h"
+#include "external_port_input_descriptor.h"
 
 namespace avdecc_lib
 {
-    class strings_descriptor_imp : public strings_descriptor, public virtual descriptor_base_imp
+    class external_port_input_descriptor_imp : public external_port_input_descriptor, public virtual descriptor_base_imp
     {
     private:
-        struct jdksavdecc_descriptor_strings strings_desc; // Structure containing the strings_desc fields
-
+        struct jdksavdecc_descriptor_external_port desc;
     public:
-        strings_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len);
-        virtual ~strings_descriptor_imp();
+        external_port_input_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len);
+        virtual ~external_port_input_descriptor_imp();
 
         uint16_t STDCALL descriptor_type() const;
         uint16_t STDCALL descriptor_index() const;
-        uint8_t * STDCALL get_string_by_index(size_t string_index);
+
+        uint16_t STDCALL port_flags();
+        uint16_t STDCALL clock_domain_index();
+        uint16_t STDCALL number_of_controls();
+        uint16_t STDCALL base_control();
+        uint16_t STDCALL signal_type();
+        uint16_t STDCALL signal_index();
+        uint16_t STDCALL signal_output();
+        uint32_t STDCALL block_latency();
+        uint16_t STDCALL jack_index();
     };
 }
+
