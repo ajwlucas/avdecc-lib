@@ -37,6 +37,15 @@
 #include <string>
 #include <queue>
 
+#if defined _WIN32 || defined _WIN64
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+#ifndef ssize_t
+#define ssize_t SSIZE_T
+#endif
+#endif
+#endif
+
 class cmd_line;
 class cli_command_format;
 class cli_argument;
@@ -52,7 +61,7 @@ public:
 
     bool run_command(cmd_line *cmd_ptr, std::queue<std::string> args, bool &done, std::string prefix="");
 
-    void print_help_all(std::string prefix, int depth) const;
+    void print_help_all(std::string prefix, size_t depth) const;
     void print_help_details(std::string prefix) const;
 
     const cli_command *get_sub_command(std::queue<std::string> &cmd_path, std::string &prefix) const;

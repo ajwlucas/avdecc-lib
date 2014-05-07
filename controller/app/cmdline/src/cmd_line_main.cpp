@@ -34,6 +34,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cinttypes>
 
 #include <stdexcept>
 #include "cmd_line.h"
@@ -41,24 +42,25 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #elif defined(__linux__)
-#include <editline/readline.h>
-#include <inttypes.h>
+#include <readline/readline.h>
+#include <readline/history.h>
 #endif
 
 #if defined(__MACH__) || defined(__linux__)
 #include <unistd.h>
 #include <stdio.h>
+#include <string.h>
 
 // For TAB-completion
 #include "cli_argument.h"
 #include <set>
 #else
-#include "getopt.h"
+#include "msvc\getopt.h"
 #endif
 
 using namespace std;
 
-extern "C" void notification_callback(void *user_obj, int32_t notification_type, uint64_t guid, uint16_t cmd_type,
+extern "C" void notification_callback(void *user_obj, int32_t notification_type, uint64_t entity_id, uint16_t cmd_type,
                                       uint16_t desc_type, uint16_t desc_index, uint32_t cmd_status,
                                       void *notification_id)
 {
@@ -81,9 +83,9 @@ extern "C" void notification_callback(void *user_obj, int32_t notification_type,
             cmd_status_name = cmd_line::utility->acmp_cmd_status_value_to_name(cmd_status);
         }
 
-        printf("\n[NOTIFICATION] (%s, 0x%llx, %s, %s, %d, %s, %p)\n",
+        printf("\n[NOTIFICATION] (%s, 0x%"  PRIx64 ", %s, %s, %d, %s, %p)\n",
                cmd_line::utility->notification_value_to_name(notification_type),
-               guid,
+               entity_id,
                cmd_name,
                desc_name,
                desc_index,
@@ -92,9 +94,9 @@ extern "C" void notification_callback(void *user_obj, int32_t notification_type,
     }
     else
     {
-        printf("\n[NOTIFICATION] (%s, 0x%llx, %d, %d, %d, %d, %p)\n",
+        printf("\n[NOTIFICATION] (%s, 0x%"  PRIx64 ", %d, %d, %d, %d, %p)\n",
                cmd_line::utility->notification_value_to_name(notification_type),
-               guid,
+               entity_id,
                cmd_type,
                desc_type,
                desc_index,
@@ -222,7 +224,7 @@ int main(int argc, char *argv[])
     int error = 0;
     char *interface = NULL;
     int c = 0;
-    int32_t log_level = 0;
+    int32_t log_level = avdecc_lib::LOGGING_LEVEL_ERROR;
 
     while ((c = getopt(argc, argv, "ti:l:")) != -1) {
         switch (c) {
@@ -267,7 +269,7 @@ int main(int argc, char *argv[])
     std::vector<std::string> input_argv;
     size_t pos = 0;
     bool done = false;
-    bool is_input_valid = false;
+    //bool is_input_valid = false;
     std::string cmd_input_orig;
 #if defined(__MACH__) || defined(__linux__)
     char* input;
@@ -276,8 +278,12 @@ int main(int argc, char *argv[])
     top_level_command = avdecc_cmd_line_ref.get_commands();
     rl_attempted_completion_function = command_completer;
 
+#endif
     // Override to prevent filename completion
+#if defined(__MACH__)
     rl_completion_entry_function = (Function *)null_completer;
+#elif defined(__linux__) 
+    rl_completion_entry_function = null_completer;
 #endif
 
 
@@ -322,7 +328,7 @@ int main(int argc, char *argv[])
 
         done = avdecc_cmd_line_ref.handle(input_argv);
 
-        is_input_valid = false;
+        //is_input_valid = false;
         input_argv.clear();
 #if defined(__MACH__) || defined(__linux__)
         free(input);

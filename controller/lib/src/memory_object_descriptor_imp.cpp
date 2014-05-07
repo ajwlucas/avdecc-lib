@@ -27,6 +27,7 @@
  * MEMORY OBJECT descriptor implementation
  */
 
+#include "avdecc_error.h"
 #include "enumeration.h"
 #include "log_imp.h"
 #include "end_station_imp.h"
@@ -52,12 +53,11 @@ namespace avdecc_lib
 
     memory_object_descriptor_imp::memory_object_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len) : descriptor_base_imp(end_station_obj)
     {
-        desc_memory_object_read_returned = jdksavdecc_descriptor_memory_object_read(&memory_object_desc, frame, pos, frame_len);
+        ssize_t ret = jdksavdecc_descriptor_memory_object_read(&memory_object_desc, frame, pos, frame_len);
 
-        if(desc_memory_object_read_returned < 0)
+        if (ret < 0)
         {
-            log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "0x%llx, memory_object_desc_read error", end_station_obj->guid());
-            assert(desc_memory_object_read_returned >= 0);
+            throw avdecc_read_descriptor_error("memory_object_desc_read error");
         }
     }
 
@@ -128,6 +128,7 @@ namespace avdecc_lib
     {
         struct jdksavdecc_frame cmd_frame;
         struct jdksavdecc_aem_command_start_operation aem_cmd_start_operation;
+        memset(&aem_cmd_start_operation,0,sizeof(aem_cmd_start_operation));
 
         if (operation_type > JDKSAVDECC_MEMORY_OBJECT_OPERATION_UPLOAD)
         {
@@ -135,7 +136,7 @@ namespace avdecc_lib
             return -1;
         }
 
-        aem_cmd_start_operation.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_guid();
+        aem_cmd_start_operation.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_entity_id();
         aem_cmd_start_operation.aem_header.command_type = JDKSAVDECC_AEM_COMMAND_START_OPERATION;
 
         aem_cmd_start_operation.descriptor_type = descriptor_type();
@@ -158,7 +159,7 @@ namespace avdecc_lib
 
         aecp_controller_state_machine_ref->common_hdr_init(JDKSAVDECC_AECP_MESSAGE_TYPE_AEM_COMMAND,
                                                             &cmd_frame,
-                                                            base_end_station_imp_ref->guid(),
+                                                            base_end_station_imp_ref->entity_id(),
                                                             JDKSAVDECC_AEM_COMMAND_START_OPERATION_COMMAND_LEN - 
                                                             JDKSAVDECC_COMMON_CONTROL_HEADER_LEN);
         system_queue_tx(notification_id, CMD_WITH_NOTIFICATION, cmd_frame.payload, cmd_frame.length);
@@ -175,6 +176,7 @@ namespace avdecc_lib
     {
         struct jdksavdecc_frame cmd_frame;
         struct jdksavdecc_aem_command_start_operation_response aem_cmd_start_operation_resp;
+        memset(&aem_cmd_start_operation_resp,0,sizeof(aem_cmd_start_operation_resp));
 
         memcpy(cmd_frame.payload, frame, frame_len);
 
@@ -210,7 +212,7 @@ namespace avdecc_lib
     {
         struct jdksavdecc_frame cmd_frame;
         struct jdksavdecc_aem_command_operation_status_response aem_operation_status_resp;
-
+        memset(&aem_operation_status_resp,0,sizeof(aem_operation_status_resp));
         memcpy(cmd_frame.payload, frame, frame_len);
 
         ssize_t aem_operation_status_resp_returned = jdksavdecc_aem_command_operation_status_response_read(&aem_operation_status_resp,

@@ -36,9 +36,17 @@
 #include <string>
 #include <queue>
 
-#include "cli_argument.h"
+#if defined _WIN32 || defined _WIN64
+#ifdef _MSC_VER
+#include <BaseTsd.h>
+#ifndef ssize_t
+#define ssize_t SSIZE_T
+#endif
+#endif
+#endif
 
-class cmd_line;
+#include "cli_argument.h"
+#include "cmd_line.h"
 
 class cli_command;
 typedef int (cmd_line::*cli_fptr)(int total_matched, std::vector<cli_argument*> args);
@@ -50,7 +58,7 @@ public:
     virtual ~cli_command_format() {};
 
     void add_argument(cli_argument *arg);
-    cli_argument *get_arg(ssize_t index) const;
+    cli_argument *get_arg(size_t index) const;
 
     bool run_command(cmd_line *cmd_ptr, std::queue<std::string> args, bool &done);
 

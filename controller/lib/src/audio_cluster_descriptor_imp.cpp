@@ -27,6 +27,7 @@
  * Audio Cluster descriptor implementation
  */
 
+#include "avdecc_error.h"
 #include "enumeration.h"
 #include "log_imp.h"
 #include "end_station_imp.h"
@@ -36,12 +37,11 @@ namespace avdecc_lib
 {
     audio_cluster_descriptor_imp::audio_cluster_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len) : descriptor_base_imp(end_station_obj)
     {
-        audio_cluster_desc_read_returned = jdksavdecc_descriptor_audio_cluster_read(&audio_cluster_desc, frame, pos, frame_len);
+        ssize_t ret = jdksavdecc_descriptor_audio_cluster_read(&audio_cluster_desc, frame, pos, frame_len);
 
-        if(audio_cluster_desc_read_returned < 0)
+        if (ret < 0)
         {
-            log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "0x%llx, audio_cluster_desc_read error", end_station_obj->guid());
-            assert(audio_cluster_desc_read_returned >= 0);
+            throw avdecc_read_descriptor_error("audio_cluster_desc_read error");
         }
     }
 

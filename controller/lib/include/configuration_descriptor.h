@@ -54,6 +54,9 @@ namespace avdecc_lib
     class audio_cluster_descriptor;
     class audio_map_descriptor;
     class clock_domain_descriptor;
+    class control_descriptor;
+    class external_port_input_descriptor;
+    class external_port_output_descriptor;
 
     class configuration_descriptor : public virtual descriptor_base
     {
@@ -124,6 +127,11 @@ namespace avdecc_lib
         AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL locale_desc_count() = 0;
 
         /**
+         * \return The a string from the list of Strings descriptors present in the current configuration.
+         */
+        AVDECC_CONTROLLER_LIB32_API virtual uint8_t * STDCALL get_strings_desc_string_by_reference(size_t reference) = 0;
+
+        /**
          * \return The number of Strings descriptors present in the current configuration.
          */
         AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL strings_desc_count() = 0;
@@ -152,6 +160,21 @@ namespace avdecc_lib
          * \return The number of CLOCK DOMAIN descriptors present in the current configuration.
          */
         AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL clock_domain_desc_count() = 0;
+
+        /**
+         * \return The number of CONTROL descriptors present in the current configuration.
+         */
+        AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL control_desc_count() = 0;
+
+        /**
+        * \return The number of EXTERNAL_PORT_INPUT descriptors present in the current configuration.
+        */
+        AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL external_port_input_desc_count() = 0;
+
+        /**
+        * \return The number of EXTERNAL_PORT_OUTPUT descriptors present in the current configuration.
+        */
+        AVDECC_CONTROLLER_LIB32_API virtual size_t STDCALL external_port_output_desc_count() = 0;
 
         /**
          * \return The corresponding AUDIO UNIT descriptor by index.
@@ -227,6 +250,21 @@ namespace avdecc_lib
          * \return The corresponding CLOCK DOMAIN descriptor by index.
          */
         AVDECC_CONTROLLER_LIB32_API virtual clock_domain_descriptor * STDCALL get_clock_domain_desc_by_index(size_t clock_domain_desc_index) = 0;
+
+        /**
+         * \return The corresponding CONTROL descriptor by index.
+         */
+        AVDECC_CONTROLLER_LIB32_API virtual control_descriptor * STDCALL get_control_desc_by_index(size_t control_desc_index) = 0;
+
+        /**
+        * \return The corresponding INTERNAL_PORT_INPUT descriptor by index.
+        */
+        AVDECC_CONTROLLER_LIB32_API virtual external_port_input_descriptor * STDCALL get_external_port_input_desc_by_index(size_t index) = 0;
+
+        /**
+        * \return The corresponding INTERNAL_PORT_OUTPUT descriptor by index.
+        */
+        AVDECC_CONTROLLER_LIB32_API virtual external_port_output_descriptor * STDCALL get_external_port_output_desc_by_index(size_t index) = 0;
     };
 }
 

@@ -44,8 +44,6 @@ namespace avdecc_lib
 
     net_interface_imp::net_interface_imp()
     {
-        interface_num = 0;
-
         if(pcap_findalldevs(&all_devs, err_buf) == -1) // Retrieve the device list on the local machine.
         {
             log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "pcap_findalldevs error %s", err_buf);
@@ -55,12 +53,6 @@ namespace avdecc_lib
         for(dev = all_devs, total_devs = 0; dev; dev = dev->next)
         {
             total_devs++;
-
-            /********** If this is the Windows AVB driver then use the RTX Virtual NIC *********/
-            if(strstr(dev->description,"RTX Virtual") || strstr(dev->description,"Virtual RTX"))
-            {
-                interface_num = total_devs;
-            }
         }
 
         if(total_devs == 0)
@@ -115,19 +107,11 @@ namespace avdecc_lib
         DWORD status;
         int timeout_ms = NETIF_READ_TIMEOUT_MS;
 
-        if(interface_num == 0)
+        if(interface_num < 1 || interface_num > total_devs)
         {
-            if(interface_num < 1 || interface_num > total_devs)
-            {
-                log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "Interface number out of range.");
-                pcap_freealldevs(all_devs); // Free the device list
-                exit(EXIT_FAILURE);
-            }
-        }
-
-        else
-        {
-            interface_num = interface_num;
+            log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "Interface number out of range.");
+            pcap_freealldevs(all_devs); // Free the device list
+            exit(EXIT_FAILURE);
         }
 
         for(dev = all_devs, index = 0; index < interface_num - 1; dev = dev->next, index++); // Jump to the selected adapter

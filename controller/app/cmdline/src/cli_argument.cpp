@@ -29,6 +29,7 @@
  */
 
 #include <assert.h>
+#include <cinttypes>
 
 #include "controller.h"
 #include "end_station.h"
@@ -38,7 +39,7 @@
 
 cli_argument::cli_argument(cmd_line *cmd_line_ptr, const std::string name,
         const std::string help, const std::string hint,
-        int match_min, int match_max)
+        size_t match_min, size_t match_max)
     : m_cmd_line_ptr(cmd_line_ptr)
     , m_is_valid(false)
     , m_match_min(match_min)
@@ -123,19 +124,19 @@ bool cli_argument::is_valid() const
     return m_is_valid;
 }
 
-bool cli_argument::get_match_min() const
+size_t cli_argument::get_match_min() const
 {
     return m_match_min;
 }
 
-int cli_argument::get_match_max() const
+size_t cli_argument::get_match_max() const
 {
     return m_match_max;
 }
 
 cli_argument_int::cli_argument_int(cmd_line *cmd_line_ptr, const std::string name,
         const std::string help, const std::string hint,
-        int match_min, int match_max)
+        size_t match_min, size_t match_max)
     : cli_argument(cmd_line_ptr, name, help + " (type int)", hint, match_min, match_max)
 {}
 
@@ -172,7 +173,7 @@ int cli_argument_int::get_value_int() const
     return m_values[0];
 }
 
-int cli_argument_int::get_all_value_count() const
+size_t cli_argument_int::get_all_value_count() const
 {
     return m_values.size();
 }
@@ -184,8 +185,8 @@ std::vector<int> cli_argument_int::get_all_value_int() const
 
 cli_argument_end_station::cli_argument_end_station(cmd_line *cmd_line_ptr, const std::string name,
         const std::string help, const std::string hint,
-        int match_min, int match_max)
-    : cli_argument(cmd_line_ptr, name, help + " (index as int or GUID)", hint, match_min, match_max)
+        size_t match_min, size_t match_max)
+    : cli_argument(cmd_line_ptr, name, help + " (index as int or Entity ID)", hint, match_min, match_max)
 {}
 
 void cli_argument_end_station::clear()
@@ -215,10 +216,10 @@ void cli_argument_end_station::get_completion_options(std::set<std::string> &opt
 
     for (size_t i = 0; i < controller->get_end_station_count(); i++)
     {
-        char guid_str[20];
+        char entity_id_str[20];
         avdecc_lib::end_station *end_station = controller->get_end_station_by_index(i);
-        sprintf(guid_str, "0x%llx", end_station->guid());
-        options.insert(std::string(guid_str));
+        sprintf(entity_id_str, "0x%"  PRIx64, end_station->entity_id());
+        options.insert(std::string(entity_id_str));
     }
 }
 
@@ -228,7 +229,7 @@ uint32_t cli_argument_end_station::get_value_uint() const
     return m_values[0];
 }
 
-int cli_argument_end_station::get_all_value_count() const
+size_t cli_argument_end_station::get_all_value_count() const
 {
     return m_values.size();
 }
@@ -240,7 +241,7 @@ std::vector<uint32_t> cli_argument_end_station::get_all_value_uint() const
 
 cli_argument_string::cli_argument_string(cmd_line *cmd_line_ptr, const std::string name,
         const std::string help, const std::string hint,
-        int match_min, int match_max)
+        size_t match_min, size_t match_max)
     : cli_argument(cmd_line_ptr, name, help + " (type string)", hint, match_min, match_max)
 {}
 
@@ -272,7 +273,7 @@ std::string cli_argument_string::get_value_str() const
     return m_values[0];
 }
 
-int cli_argument_string::get_all_value_count() const
+size_t cli_argument_string::get_all_value_count() const
 {
     return m_values.size();
 }

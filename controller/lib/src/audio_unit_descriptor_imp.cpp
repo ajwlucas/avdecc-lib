@@ -28,6 +28,7 @@
  */
 
 #include <vector>
+#include "avdecc_error.h"
 #include "enumeration.h"
 #include "log_imp.h"
 #include "adp.h"
@@ -40,12 +41,11 @@ namespace avdecc_lib
 {
     audio_unit_descriptor_imp::audio_unit_descriptor_imp(end_station_imp *end_station_obj, const uint8_t *frame, ssize_t pos, size_t frame_len) : descriptor_base_imp(end_station_obj)
     {
-        desc_audio_read_returned = jdksavdecc_descriptor_audio_read(&audio_unit_desc, frame, pos, frame_len);
+        ssize_t ret = jdksavdecc_descriptor_audio_read(&audio_unit_desc, frame, pos, frame_len);
 
-        if(desc_audio_read_returned < 0)
+        if(ret < 0)
         {
-            log_imp_ref->post_log_msg(LOGGING_LEVEL_ERROR, "0x%llx, audio_unit_desc_read error", end_station_obj->guid());
-            assert(desc_audio_read_returned >= 0);
+            throw avdecc_read_descriptor_error("audio_unit_desc_read error");
         }
 
         sampling_rates_init(frame);
@@ -297,8 +297,10 @@ namespace avdecc_lib
         struct jdksavdecc_aem_command_set_sampling_rate aem_cmd_set_sampling_rate;
         ssize_t aem_cmd_set_sampling_rate_returned;
 
+        memset(&aem_cmd_set_sampling_rate, 0, sizeof(aem_cmd_set_sampling_rate));
+
         /******************************************* AECP Common Data **********************************************/
-		aem_cmd_set_sampling_rate.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_guid();
+		aem_cmd_set_sampling_rate.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_entity_id();
         // Fill aem_cmd_get_sampling_rate.sequence_id in AEM Controller State Machine
 		aem_cmd_set_sampling_rate.aem_header.command_type = JDKSAVDECC_AEM_COMMAND_SET_SAMPLING_RATE;
 
@@ -324,7 +326,7 @@ namespace avdecc_lib
 
         aecp_controller_state_machine_ref->common_hdr_init(JDKSAVDECC_AECP_MESSAGE_TYPE_AEM_COMMAND,
                                                             &cmd_frame,
-                                                            base_end_station_imp_ref->guid(),
+                                                            base_end_station_imp_ref->entity_id(),
                                                             JDKSAVDECC_AEM_COMMAND_SET_SAMPLING_RATE_COMMAND_LEN - 
                                                             JDKSAVDECC_COMMON_CONTROL_HEADER_LEN);
         system_queue_tx(notification_id, CMD_WITH_NOTIFICATION, cmd_frame.payload, cmd_frame.length);
@@ -373,9 +375,10 @@ namespace avdecc_lib
         struct jdksavdecc_frame cmd_frame;
         struct jdksavdecc_aem_command_get_sampling_rate aem_cmd_get_sampling_rate;
         ssize_t aem_cmd_get_sampling_rate_returned;
+        memset(&aem_cmd_get_sampling_rate,0,sizeof(aem_cmd_get_sampling_rate));
 
         /******************************************** AECP Common Data *********************************************/
-        aem_cmd_get_sampling_rate.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_guid();
+        aem_cmd_get_sampling_rate.aem_header.aecpdu_header.controller_entity_id = base_end_station_imp_ref->get_adp()->get_controller_entity_id();
         // Fill aem_cmd_get_sampling_rate.sequence_id in AEM Controller State Machine
         aem_cmd_get_sampling_rate.aem_header.command_type = JDKSAVDECC_AEM_COMMAND_GET_SAMPLING_RATE;
 
@@ -400,7 +403,7 @@ namespace avdecc_lib
 
         aecp_controller_state_machine_ref->common_hdr_init(JDKSAVDECC_AECP_MESSAGE_TYPE_AEM_COMMAND,
                                                             &cmd_frame,
-                                                            base_end_station_imp_ref->guid(),
+                                                            base_end_station_imp_ref->entity_id(),
                                                             JDKSAVDECC_AEM_COMMAND_GET_SAMPLING_RATE_COMMAND_LEN - 
                                                             JDKSAVDECC_COMMON_CONTROL_HEADER_LEN);
         system_queue_tx(notification_id, CMD_WITH_NOTIFICATION, cmd_frame.payload, cmd_frame.length);

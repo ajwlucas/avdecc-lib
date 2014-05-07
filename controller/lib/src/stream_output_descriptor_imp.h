@@ -44,7 +44,6 @@ namespace avdecc_lib
     {
     private:
         struct jdksavdecc_descriptor_stream stream_output_desc; // Structure containing the stream_output_desc fields
-        ssize_t stream_output_desc_read_returned; // Status of extracting STREAM OUTPUT descriptor information from a network buffer
 
 		std::map <string, int> stream_info_flags;
 
@@ -151,7 +150,7 @@ namespace avdecc_lib
         int STDCALL send_get_tx_state_cmd(void *notification_id);
         int proc_get_tx_state_resp(void *&notification_id, const uint8_t *frame, size_t frame_len, int &status);
 
-        int STDCALL send_get_tx_connection_cmd(void *notification_id, uint64_t listener_guid, uint16_t listener_unique_id);
+        int STDCALL send_get_tx_connection_cmd(void *notification_id, uint64_t listener_entity_id, uint16_t listener_unique_id);
         int proc_get_tx_connection_resp(void *&notification_id, const uint8_t *frame, size_t frame_len, int &status);
 
     private:

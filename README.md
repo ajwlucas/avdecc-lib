@@ -33,12 +33,14 @@ to develop a complete controller side 1722.1 software stack.
 Dependencies
 ------------
 
-Uses Jeff Koftinoff's packet processing library. This is a submodule that can be cloned using:
+Uses Jeff Koftinoff's packet processing library, see <https://github.com/jdkoftinoff/jdksavdecc-c.git>
+This is a submodule that can be cloned using:
 
 	cd avdecc-lib
 	git submodule init
 	git submodule update
 
+As of March 2014, avdecc-lib is following the master branch of jdksavdecc-c (from github).
 
 Acknowledgements
 ----------------
@@ -132,7 +134,7 @@ Run cmake to create the build dirctories for your environment.
 	
 Prerequisites
 
-1. MSVC 2010 or later
+1. MSVC 2013 or later
 2. winpcap development package from <http://www.winpcap.org/devel.htm>
 
 The following environment variables must be defined:
@@ -144,6 +146,7 @@ Prerequisites
 
 1. gcc development environment (v4.8 or later)
 2. libedit
+3. readline library, may need to go "sudo apt-get install libreadline5-dev"
 
 ### OSX ###
 
@@ -244,7 +247,15 @@ Source documentation
 A standard tool, Doxygen, is used for generating documentation from the AVDECC Controller Lib source code.
 A link to the online version of the AVDECC Controller Lib documentation can be found at:
 http://www.audioscience.com/internet/download/sdk/avdecclib_usermanual_html/html/index.html
-			 
+
+Development Conventions
+=======================
+
+Developers should add new features to the *staging* git branch. Periodically the *staging* git branch
+will be merged to the *master* branch.
+
+![](git_dev_seq_uml.png)
+
 
 Roadmap
 =======
