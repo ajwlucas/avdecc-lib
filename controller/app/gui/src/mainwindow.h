@@ -49,7 +49,6 @@ private:
     avdecc_lib::net_interface *netif;
     avdecc_lib::system *sys;
     avdecc_lib::controller *controller_obj;
-    avdecc_lib::util *utility;
 
     QWidget *rightTabs[3];
     QString rightTabLabels[3];

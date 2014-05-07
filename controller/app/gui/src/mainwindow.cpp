@@ -40,7 +40,6 @@ MainWindow::~MainWindow()
     sys->destroy();
     controller_obj->destroy();
     netif->destroy();
-    utility->destroy();
 }
 
 void MainWindow::log_callback(void *user_obj, int32_t log_level, const char *log_msg, int32_t time_stamp_ms)
@@ -255,7 +254,6 @@ void MainWindow::left_tab_change(int index)
 
 int MainWindow::show_eth_interface_dialog()
 {
-    utility = avdecc_lib::create_util();
     netif = avdecc_lib::create_net_interface();
     controller_obj = avdecc_lib::create_controller(netif, MainWindow::wrapper_to_notification_callback, this, MainWindow::log_callback, 5);
     sys = avdecc_lib::create_system(avdecc_lib::system::LAYER2_MULTITHREADED_CALLBACK, netif, controller_obj);
